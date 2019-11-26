@@ -18,12 +18,24 @@ public class Game extends Canvas implements Runnable{
 	private Thread thread;
 	private Handler handler;
 	private Camera camera;
+	private Menu menu;
 	
 	private BufferedImage level = null;
 	
 	public int ammo = 100; //ammunition
 	public int hp = 100;//health points
+	
+	public enum STATE {
+		Menu,
+		Game,
+		Help,
+		End
+	}
+	
+	public STATE gameState = STATE.Menu; // cast STATE as a type
 
+	
+	
 	public Game() {
 		//constructor
 		new Window(WIDTH, HEIGHT, title, this);
@@ -31,25 +43,32 @@ public class Game extends Canvas implements Runnable{
 		
 		handler = new Handler();
 		camera = new Camera(0,0);
+		menu = new Menu(this, handler);
+		this.addMouseListener(menu);
+		
 		this.addKeyListener(new KeyInput(handler));
 		this.addMouseListener(new MouseInput(handler, camera, this));//this refers to game
 		
 		//BufferedImageLoader loader = new BufferedImageLoader();
 		//level = loader.loadImage("/shark_level.png");//Photoshop file loaded into here.
 		
-		handler.addObject(new Shark(100, 100, ID.Player, handler,this));
 		
-		handler.addObject(new Block(200, 200, ID.Block)); //test block for collision
-		handler.addObject(new Block(300, 300, ID.Block)); //test block for collision
-		handler.addObject(new Block(500, 500, ID.Block)); //test block for collision
 		
-		handler.addObject(new Enemy(400, 400, ID.Enemy, handler)); //test enemy
-		handler.addObject(new Enemy(400, 400, ID.Enemy, handler)); //test enemy
-		handler.addObject(new Enemy(600, 600, ID.Enemy, handler)); //test enemy
-		handler.addObject(new Enemy(400, 400, ID.Enemy, handler)); //test enemy
-		
-		handler.addObject(new Crate(800, 400, ID.Crate)); // test crate
-		handler.addObject(new Crate(800, 400, ID.Crate)); // test crate
+		if(gameState == STATE.Game) {
+			/*handler.addObject(new Shark(100, 100, ID.Player, handler, this));
+			
+			handler.addObject(new Block(200, 200, ID.Block)); //test block for collision
+			handler.addObject(new Block(300, 300, ID.Block)); //test block for collision
+			handler.addObject(new Block(500, 500, ID.Block)); //test block for collision
+			
+			handler.addObject(new Enemy(400, 400, ID.Enemy, handler)); //test enemy
+			handler.addObject(new Enemy(400, 400, ID.Enemy, handler)); //test enemy
+			handler.addObject(new Enemy(600, 600, ID.Enemy, handler)); //test enemy
+			handler.addObject(new Enemy(400, 400, ID.Enemy, handler)); //test enemy
+			
+			handler.addObject(new Crate(800, 400, ID.Crate)); // test crate
+			handler.addObject(new Crate(800, 400, ID.Crate)); // test crate*/
+		}
 		
 		
 		//loadLevel(level);  //Method to load the level
@@ -74,6 +93,7 @@ public class Game extends Canvas implements Runnable{
 	}
 	
 	public void run() {
+		
 		this.requestFocus();
 		long lastTime = System.nanoTime();
 		double amountofTicks = 60.0;
@@ -109,7 +129,16 @@ public class Game extends Canvas implements Runnable{
 				}
 			}
 			
-			handler.tick();
+			// If the game state is in game then update the game
+			if(gameState == STATE.Game) {
+				handler.tick();
+				if(hp <= 0) {
+					gameState = STATE.End;
+				}
+			} else if(gameState == STATE.Menu || gameState == STATE.End) {
+				menu.tick();
+			}
+			
 			
 		}
 		
@@ -120,19 +149,21 @@ public class Game extends Canvas implements Runnable{
 				this.createBufferStrategy(3);
 				return;
 			}
-		Graphics g = bs.getDrawGraphics();
-		Graphics2D g2d = (Graphics2D) g;
-		//////////////////////////////////
-		//Meat and bones of our rendering
-				g.setColor(Color.red);
-				g.fillRect(0, 0, WIDTH, HEIGHT);
+			Graphics g = bs.getDrawGraphics();
+			Graphics2D g2d = (Graphics2D) g;
+			//////////////////////////////////
+		    //Meat and bones of our rendering
+			g.setColor(Color.GRAY);
+			g.fillRect(0, 0, WIDTH, HEIGHT);
+			
+			g2d.translate(-camera.getX(), -camera.getY());
 				
-				g2d.translate(-camera.getX(), -camera.getY());
-				
-				handler.render(g);
-				
+			handler.render(g);   //We always want to render
+			
+			// If the state of the game is Game then continue to render parts of the game
+			if(gameState == STATE.Game) {
 				g2d.translate(camera.getX(), camera.getY());
-				
+					
 				//This health bar code stays below all other code in this section
 				g.setColor(Color.gray);
 				g.fillRect(5,5, 200, 32);
@@ -143,12 +174,16 @@ public class Game extends Canvas implements Runnable{
 				
 				g.setColor(Color.white);
 				g.drawString("Ammo: " + ammo, 5, 50);
-				
-		///////////////////////////////////	
-			g.dispose();
-			bs.show();
+
+			} 
+			// Else show the menu
+			else if(gameState == STATE.Menu || gameState == STATE.Help || gameState == STATE.End) {
+				menu.render(g);
+			}
 			
-}
+			g.dispose();
+		    bs.show();
+        }  //End render method
 		
 		//loading the level
 		private void loadLevel(BufferedImage image) {
@@ -172,6 +207,7 @@ public class Game extends Canvas implements Runnable{
 			}
 			
 		}
+
 
 	public static void main(String[] args) {
 		new Game();
