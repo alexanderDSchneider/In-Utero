@@ -56,12 +56,22 @@ public class Shark extends GameObject{
 			}
 			
 			if(tempObject.getId() == ID.Enemy) {
-				//if player collides with crate...
+				//if player collides with enemy...
 				if(getBounds().intersects(tempObject.getBounds())){
-					game.ammo += 10;
-					handler.removeObject(tempObject);//remove wants collected
+					game.hp-- ;
+					//handler.removeObject(tempObject);//remove wants collected
 				}
 			}
+			
+			if(tempObject.getId() == ID.DirectedEnemy) {
+				//if player collides with enemy...
+				if(getBounds().intersects(tempObject.getBounds())){
+					game.hp-- ;
+					//handler.removeObject(tempObject);//remove wants collected
+				}
+			}
+			if(game.hp <= 0) handler.removeObject(this);  //enemy dies
+			
 		}
 	}
 
@@ -74,5 +84,14 @@ public class Shark extends GameObject{
 	public Rectangle getBounds() {
 		return new Rectangle (x, y, 32, 48);
 	}
+	
+	public int getX() {
+		return x; 
+	}
+	
+	public int getY() {
+		return y; 
+	}
+
 
 }
