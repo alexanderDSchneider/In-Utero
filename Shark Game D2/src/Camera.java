@@ -36,5 +36,10 @@ public class Camera {
 		this.y = y;
 	}
 	
+	public void endCamera() {
+		this.setX(0);
+		this.setY(0);
+	}
+	
 	
 }
