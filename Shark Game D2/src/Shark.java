@@ -1,11 +1,14 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
 public class Shark extends GameObject{
 	
 	Handler handler;
 	Game game;
+	Texture texture;
 
 	public Shark(int x, int y, ID id, Handler handler, Game game) {
 		super(x, y, id);
@@ -51,28 +54,28 @@ public class Shark extends GameObject{
 				//if player collides with crate...
 				if(getBounds().intersects(tempObject.getBounds())){
 					game.ammo += 10;
-					handler.removeObject(tempObject);//remove wants collected
+					handler.removeObject(tempObject);//remove once collected
 				}
 			}
 			
 			if(tempObject.getId() == ID.Enemy) {
 				//if player collides with crate...
 				if(getBounds().intersects(tempObject.getBounds())){
-					game.ammo += 10;
-					handler.removeObject(tempObject);//remove wants collected
+					game.hp--;
+					//handler.removeObject(tempObject);//remove once collected
 				}
 			}
 		}
 	}
-
+	
 	public void render(Graphics g) {
 		g.setColor(Color.blue);
-		g.fillRect(x, y, 32, 48);
-		
+		g.fillRect(x, y, 64, 32);
+		//g.drawImage(texture.shark[0], x, y, null);
 	}
 
 	public Rectangle getBounds() {
-		return new Rectangle (x, y, 32, 48);
+		return new Rectangle (x, y, 64, 32);
 	}
 
 }
